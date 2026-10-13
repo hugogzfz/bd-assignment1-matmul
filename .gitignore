@@ -1,0 +1,10 @@
+build/
+data/*.bin
+__pycache__/
+report/*.aux
+report/*.log
+report/*.fls
+report/*.fdb_latexmk
+report/*.out
+report/build.log
+report/pg/
