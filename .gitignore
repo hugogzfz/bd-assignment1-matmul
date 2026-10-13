@@ -8,3 +8,4 @@ report/*.fdb_latexmk
 report/*.out
 report/build.log
 report/pg/
+.DS_Store
