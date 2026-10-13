@@ -1,7 +1,7 @@
 # Big Data (ULPGC 2026-2027) – Individual Assignment 1
 ## Basic dense matrix multiplication in Python, Java and C
 
-Author: Hugo González Fernández · Grado en Ciencia e Ingeniería de Datos, ULPGC
+Author: Hugo González Fernández · Bachelor’s Degree in Data Science and Engineering, ULPGC
 
 Research question: *How do runtime and memory use of the textbook O(n³) triple-loop multiplication of
 n × n `float64` matrices grow with n in C, Java and Python, under one documented environment?*
@@ -138,11 +138,5 @@ being produced by the included code or checked against its source.
 
 ## 10. Important notes on the reported results
 
-* The reported measurements were produced on one **virtual machine** (2 vCPU Intel Xeon @ 2.8 GHz, 7.8 GiB RAM,
-  see `results/environment.json`), not on a personal computer. To obtain numbers for another machine, move or delete
-  `results/*.csv`, run `make bench cflags analyze report`, and **update the interpretation in the report**:
-  figures and tables are regenerated automatically, the numbers quoted in the text are not.
-* Time budget: a single multiplication must finish within 300 s, so sizes near the limit end in a `timeout` row
-  (this is a result, not an error). The supplementary experiments were designed after seeing the main results and are
-  exploratory (see the report, Section 3.10).
-* Remember to replace the repository URL in `report/report.tex` (`\repourl`) by the real GitHub repository.
+- **Execution environment:** The reported measurements were produced on a dedicated virtual machine (2 vCPU Intel Xeon @ 2.8 GHz, 7.8 GiB RAM; see `results/environment.json`). To obtain measurements for another machine, move or delete `results/*.csv`, execute `make bench cflags analyze report`, and update the narrative interpretations in the report accordingly (figures and tables are regenerated automatically from the raw data).
+- **Limits and budgets:** A strict time budget of 300 s per multiplication sample was enforced; runs exceeding this limit are recorded as timeouts (treated as valid outcome limits). The supplementary experiments (Section 3.10 of the report) were designed after observing the initial benchmark results and serve an exploratory purpose.
