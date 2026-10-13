@@ -1,0 +1,122 @@
+\section{Discussion}
+
+\subsection{Answer to the research question}
+In this environment, the time of the basic $O(n^3)$ multiplication grows close to cubically for small and medium
+matrices ($k\approx3.2$ for $50\le n\le400$ in all three languages), but the cost per multiply--add \emph{increases}
+for larger matrices in the compiled/JIT languages: in C from $1.0$--$1.4$\,ns ($200\le n\le1000$, excluding $n=512$) to $6.8$\,ns
+($n=3000$), in Java from $\approx1.6$\,ns to $11.1$\,ns ($n=2048$); in Python it rises from $50$--$60$\,ns to
+$\approx100$\,ns. Python is $49$--$75$ times slower than C and Java at $50\le n\le1000$. C and Java are
+comparable for $50\le n\lesssim1000$ (ratio $0.77$--$1.51$), after which the \texttt{double[n][n]} Java program falls behind
+($2.2$--$4.3\times$). Memory is explained by array storage plus a runtime baseline: $24$, $\approx22$ (Java, $n\le1500$) and
+$\approx121$ bytes per $n^2$, with baselines of $1.8$, $45.7$ and $9.8$\,MiB for C, Java and Python. Time, not memory, limits
+the feasible size: $n=3000$ (C), $2048$ (Java), $1250$ (Python) under a $300$\,s-per-multiplication limit.
+
+\subsection{Hypotheses}
+\begin{itemize}
+  \item \textbf{H1 (cubic growth)}: supported only partially. The exponent is $3.17$--$3.27$ for $n\le400$, but $3.29$ (Python),
+        $3.63$ (C) and $4.01$ (Java) over the larger windows. The operation count is cubic; the \emph{time} is not, because the cost
+        per operation depends on $n$ (Figure~\ref{fig:norm}).
+  \item \textbf{H2 (C $\lesssim$ Java $\ll$ Python)}: Python is $49$--$75\times$ slower for $50\le n\le1000$, consistent with ``one to two orders
+        of magnitude''. C $\lesssim$ Java holds only for $50\le n\lesssim1000$ (within noise); beyond that Java is up to $4.3\times$ slower.
+  \item \textbf{H3 (cost per operation rises with $n$)}: supported in all three languages (C $0.5\to6.8$\,ns, Java $0.9\to11.1$\,ns,
+        Python $50\to106$\,ns), with additional spikes at powers of two.
+  \item \textbf{H4 (memory model)}: supported for C ($24.0$ B$/n^2$) and Python ($120.9$ B$/n^2$); Java matches ($22.3$) up to $n=1500$ but
+        needs $\approx32$ B$/n^2$ at $n\ge2000$.
+\end{itemize}
+
+\subsection{Interpretation, and how strong the evidence is}
+\paragraph{Python.} The $\approx50$--$60$\,ns per multiply--add for $n\le200$ is the cost of executing the inner loop in the
+interpreter, where each iteration performs several bytecode dispatches, two double indexings and the allocation of a float object;
+this is consistent with the observed constant per-operation cost at small $n$ and the $\approx50$--$75\times$ gap, but the cost
+of individual bytecodes was not measured here. The further increase to $82$--$106$\,ns at $n\ge400$ coincides with the working set
+growing beyond the caches (about $40$ bytes per element, Table~\ref{tab:mem}), where every access dereferences a pointer to a float
+object; Python's increase ($\approx2\times$) is smaller than in C ($\approx5\times$) because interpreter overhead is a large constant part of its cost.
+
+\paragraph{C: powers of two and large $n$.} Two effects are visible. (i) At $n=512$ and $1024$ the matrix row stride is a multiple of
+$4096$ bytes, so the successive elements $b_{kj}$ of a column are mapped to few cache sets; the time per multiply--add jumps by
+$\approx1.8$--$1.9\times$ relative to $n\pm$ a few (Figure~\ref{fig:pow2}). The effect appears in C and in Java with a flat array,
+and not in Java with \texttt{double[n][n]}, which is consistent with a memory-layout explanation (row addresses of separately allocated
+Java arrays are not exact multiples of the page size) \cite{drepper,hennessy}. (ii) For $n\gtrsim1250$ the cost per operation grows
+steadily (Figure~\ref{fig:norm}). The matrix $B$ occupies $8n^2$ bytes ($8$\,MB at $n=1000$, $32$\,MB at $n=2048$, $72$\,MB at $n=3000$),
+which exceeds the L2 cache ($2$\,MiB per core) and approaches or exceeds the L3 cache ($33$\,MiB, shared) of this machine, and a column
+walk touches a different $4$\,KiB page at every step for $n\ge512$, which also stresses the address-translation caches. These are plausible
+causes, consistent with the trend, but \textbf{they were not measured}: no hardware performance counters were available in the virtual
+machine, so cache misses and TLB misses were not observed.
+
+\paragraph{Java versus C.} The gap in Figure~\ref{fig:time} is not a property of the JIT arithmetic: Java with a flat array is within
+$1.07$--$1.49\times$ of C for $500\le n\le2000$, whereas the \texttt{double[n][n]} version is up to $4.3\times$ slower, and the
+jagged/flat ratio grows with $n$. A jagged array adds, for every $b[k][j]$, a load of the row reference and a length check on a
+\emph{separate} object, and rows are separate memory blocks; at large $n$ this plausibly increases cache and TLB pressure. The experiment
+supports ``layout explains most of the gap'' but does not identify the mechanism, and the remaining $7$--$49\,\%$ (bounds checks,
+JIT code quality, or other effects) was not isolated. Warm-up played a minor role: the first warm-up sample was at most $1.6\times$ the steady
+value and the measured samples were stable (Figure~\ref{fig:var}).
+
+\paragraph{C compiler options.} \texttt{-O0} is $2.2$--$3.7\times$ slower; \texttt{-O1} to \texttt{-O3} are indistinguishable within the noise.
+Because floating-point reductions cannot be re-associated without \texttt{-ffast-math} and the column access of $B$ is strided, the
+compiler has little to improve; \texttt{-march=native} did not help either. This supports using \texttt{-O2} as a representative optimised
+configuration for this particular kernel, nothing more.
+
+\subsection{Limitations}
+\begin{itemize}
+  \item \textbf{One virtual machine.} All data come from one $2$-vCPU KVM guest on a shared host: other tenants, frequency scaling and
+        host scheduling are not observable or controlled, and the processes were not pinned. Absolute times are not transferable to other machines.
+  \item \textbf{Between-process variability.} At $n=1024$ the median of six independent processes varies by $13\,\%$ (C) and $40\,\%$ (Java)
+        and the within-process spread of Java is also large. Most comparisons of ratios close to $1$ at a single size (e.g.\ Java/C
+        $=0.77$ at $n=512$ or $0.96$ at $n=1024$) are therefore \emph{not} significant. The IQRs in Table~\ref{tab:time} describe
+        within-process repetitions only.
+  \item \textbf{Few repetitions at large $n$} (2--3, forced by the budget), a single pair of input matrices per size, and a single run
+        order per size (interleaved by language to reduce, not eliminate, time-of-day effects).
+  \item \textbf{Exploratory supplementary experiments.} They were designed after seeing the main results, have one process per cell (except $n=1024$) and
+        test explanations indirectly; the mechanisms above remain hypotheses.
+  \item \textbf{Scope.} Results apply to gcc $13.3$ \texttt{-O2}, OpenJDK $21$ with the serial GC, CPython $3.13$ and the algorithm, layouts and
+        inputs described here. They do not support a statement that one language is faster than another in general; other compilers, JVM settings, Python
+        implementations or matrix libraries could change the picture drastically (and are the topic of the next assignments).
+  \item \textbf{Memory metric.} RSS is not the same as heap use or allocated storage; the Java excess at $n\ge2000$ was not investigated.
+\end{itemize}
+
+\section{Conclusions}
+\begin{enumerate}
+  \item Under the described conditions, the basic triple-loop multiplication takes $\approx n^{3.2}$ for $n\le400$ in C, Java and
+        Python, and the cost per multiply--add rises for larger matrices (C up to $6.8$\,ns at $n=3000$, Java $11.1$\,ns at
+        $n=2048$, Python $\approx100$\,ns at $n\approx1000$--$1250$).
+  \item Python is $49$--$75\times$ slower than C and Java for $50\le n\le1000$. C and Java agree within a factor of $1.5$ for $50\le n\lesssim1000$;
+        beyond, \texttt{double[n][n]} Java is $2.2$--$4.3\times$ slower than C, and a flat-array Java variant removes most of that gap ($\le1.5\times$ of C).
+  \item C (and flat Java) is $\approx1.7$--$1.9\times$ slower at $n=512$ and $n=1024$ than at neighbouring sizes.
+  \item Memory follows array storage plus a runtime baseline: $24$ B$/n^2$ (C), $\approx22$ (Java, $n\le1500$), $\approx121$ (Python), with baselines $1.8$, $45.7$ and $9.8$\,MiB.
+  \item With a $300$\,s per-multiplication limit the largest feasible sizes were $3000$ (C), $2048$ (Java) and $1250$ (Python); the first
+        failures ($4096$, $3000$, $1500$) were timeouts, never memory failures.
+  \item Unresolved: the hardware mechanisms behind the large-$n$ slowdown and the power-of-two spikes (needs performance counters),
+        the origin of Java's extra memory at $n\ge2000$, and the effect of the machine (needs repetition on other hardware).
+\end{enumerate}
+The numbers apply to this experiment only; the optimisation techniques that address several of the observed effects (loop order, blocking, sparse
+formats) are left for Assignment~2.
+
+\section{Use of generative AI}
+In line with the course policy, the use of AI is disclosed: the tool was \textbf{Claude (Anthropic)}. It was used for planning the experimental
+design, writing the benchmark driver, the test and analysis scripts, the supplementary experiments and a first draft of this report.
+The affected parts are \texttt{scripts/}, \texttt{src/} and \texttt{report/}. The author is responsible for understanding the code, validating the measurements,
+checking the references and defending the conclusions; generated text is not evidence, and every number in this report was produced by the included code
+from the raw data in \texttt{results/}.
+
+\section{Reproducibility materials}
+\label{sec:materials}
+Source code, build and run instructions, raw measurements, input-generation scripts and analysis scripts are in the repository
+\repourl{} and in \path{Assignment01_GonzalezFernandez_Materials.zip}. The \texttt{README.md} gives the exact commands
+(\texttt{make build inputs test bench cflags analyze report}); the input matrices are not stored but regenerated with
+\texttt{scripts/gen\_inputs.py} and verified against the SHA-256 digests in \texttt{data/manifest.json}. Raw data:
+\path{results/raw_measurements.csv} (one row per sample, warm-up included) and \path{results/runs.csv} (one row per process);
+environment: \path{results/environment.json}; every figure and table is generated by \path{scripts/analyze.py}.
+No material from other sources is reused. All numbers in this report come from the run documented in
+\texttt{results/}.
+
+\begin{thebibliography}{99}
+\bibitem{clrs} T.~H.~Cormen, C.~E.~Leiserson, R.~L.~Rivest and C.~Stein, \emph{Introduction to Algorithms}, 4th~ed. Cambridge, MA, USA: MIT Press, 2022.
+\bibitem{drepper} U.~Drepper, ``What every programmer should know about memory,'' Red~Hat, Inc., Nov. 2007.
+\bibitem{hennessy} J.~L.~Hennessy and D.~A.~Patterson, \emph{Computer Architecture: A Quantitative Approach}, 6th~ed. Cambridge, MA, USA: Morgan Kaufmann, 2017.
+\bibitem{higham} N.~J.~Higham, \emph{Accuracy and Stability of Numerical Algorithms}, 2nd~ed. Philadelphia, PA, USA: SIAM, 2002.
+\bibitem{goldberg} D.~Goldberg, ``What every computer scientist should know about floating-point arithmetic,'' \emph{ACM Comput. Surv.}, vol.~23, no.~1, pp.~5--48, Mar. 1991.
+\bibitem{georges} A.~Georges, D.~Buytaert and L.~Eeckhout, ``Statistically rigorous Java performance evaluation,'' in \emph{Proc. 22nd ACM SIGPLAN Conf. Object-Oriented Programming Systems, Languages and Applications (OOPSLA)}, Montreal, Canada, 2007, pp.~57--76.
+\bibitem{hoefler} T.~Hoefler and R.~Belli, ``Scientific benchmarking of parallel computing systems: Twelve ways to tell the masses when reporting performance results,'' in \emph{Proc. Int. Conf. High Performance Computing, Networking, Storage and Analysis (SC '15)}, Austin, TX, USA, 2015, Art.~no.~73.
+\bibitem{numpy} C.~R.~Harris \emph{et al.}, ``Array programming with NumPy,'' \emph{Nature}, vol.~585, pp.~357--362, 2020, doi: 10.1038/s41586-020-2649-2.
+\bibitem{py312} Python Software Foundation, ``What's new in Python 3.12,'' Python documentation (built-in \texttt{sum()} uses compensated summation for floats; CPython issue gh-100425).
+\end{thebibliography}

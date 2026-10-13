@@ -1,0 +1,44 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{float}
+\captionsetup{font=small,labelfont=bf}
+\setlist{itemsep=2pt,topsep=3pt}
+\setlength{\parskip}{3pt}
+\setlength{\emergencystretch}{4em}
+% Repository URL: replace with the real GitHub repository before submitting.
+\newcommand{\repourl}{\url{https://github.com/hugogzfz/bd-assignment1-matmul}}
+
+\title{\textbf{Assignment 1: How Runtime and Memory Scale in the Basic Triple-Loop\\Matrix Multiplication in C, Java and Python}}
+\author{Hugo Gonz\'alez Fern\'andez\\[2pt]
+Big Data \,$\cdot$\, Grado en Ciencia e Ingenier\'ia de Datos\\
+Universidad de Las Palmas de Gran Canaria\\
+Academic year 2026--2027 \,$\cdot$\, Individual Assignment 1}
+\date{October 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent\textbf{Question.} How do the runtime and the memory use of the textbook $O(n^3)$ multiplication of $n\times n$ \texttt{float64}
+matrices grow with $n$ in C, Java and Python? \textbf{Method.} Three implementations of the same i--j--k triple loop read identical, seeded input
+files; only the multiplication kernel is timed (monotonic timers, warm-up and repeated samples, median and IQR); peak resident memory is recorded per process;
+every result is validated against NumPy with an a-priori error bound and the three languages produce bit-identical output. Budgets were $300$\,s per multiplication and $4$\,GiB.
+\textbf{Results.} Time grows as $\approx n^{3.2}$ for $n\le400$, and the cost per multiply--add increases for larger matrices (C $1.0$--$1.4\to6.8$\,ns, Java $1.6\to11.1$\,ns).
+Python is $49$--$75\times$ slower than C and Java at $50\le n\le1000$. Java \texttt{double[n][n]} falls $2.2$--$4.3\times$ behind C beyond $n\approx1000$,
+and a supplementary flat-array variant removes most of the gap; C shows $\approx1.8$--$1.9\times$ spikes at $n=512$ and $1024$. Memory follows array storage ($24$, $\approx22$ and $\approx121$ bytes per $n^2$)
+plus a runtime baseline ($1.8$, $45.7$, $9.8$\,MiB). The largest feasible sizes were $3000$ (C), $2048$ (Java) and $1250$ (Python).
+\textbf{Scope.} One virtual machine, one compiler/JVM/interpreter version each, 2--10 repetitions: the conclusions are valid for these settings only and are not a general ranking of languages.
+\end{abstract}
+
+\input{sec_intro_method}
+\input{sec_results}
+\input{sec_discussion}
+
+\end{document}

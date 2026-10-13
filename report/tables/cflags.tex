@@ -1,0 +1,11 @@
+\begin{tabular}{lrrrc}
+\toprule
+Flags & $n{=}512$ & $n{=}1000$ & $n{=}1024$ & same bits as -O2 \\
+\midrule
+gcc -O0 & 638\,ms & 5.17\,s & 6.63\,s & yes \\
+gcc -O1 & 299\,ms & 1.41\,s & 2.75\,s & yes \\
+gcc -O2 & 292\,ms & 1.41\,s & 2.7\,s & yes \\
+gcc -O3 & 267\,ms & 1.43\,s & 2.97\,s & yes \\
+gcc -O3 -march=native & 278\,ms & 1.39\,s & 2.91\,s & yes \\
+\bottomrule
+\end{tabular}

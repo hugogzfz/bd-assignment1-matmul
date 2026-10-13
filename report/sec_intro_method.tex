@@ -1,0 +1,186 @@
+\section{Introduction and objective}
+
+Dense matrix multiplication is the standard microbenchmark for studying how a programming language
+implementation turns the same algorithm into machine work. This study compares the \emph{textbook triple-loop}
+algorithm, which performs $n^3$ multiply--add operations on $n\times n$ matrices, in three languages:
+C (ahead-of-time compiled), Java (JIT-compiled on the JVM) and Python (CPython, interpreted).
+
+\paragraph{Research question.} \emph{How do the runtime and the memory use of the basic $O(n^3)$ multiplication of
+$n\times n$ \texttt{float64} matrices grow with $n$ in C, Java and Python, when the three programs use the same
+inputs, the same loop order and the same arithmetic on one documented machine?}
+
+\paragraph{Factor and outcomes.} The factor that changes is the matrix size $n$ (from $10$ up to the largest size
+that fits the declared budgets); the outcomes are the time of one multiplication (kernel only) and the peak resident
+memory of the process.
+
+\paragraph{Hypotheses (predictions, stated before running the experiments).}
+\begin{enumerate}
+  \item[H1] In every language the time grows approximately as $n^3$ (log--log slope $\approx 3$), but the constant
+        factor differs.
+  \item[H2] The order of speed is C $\lesssim$ Java $\ll$ Python, with Python one to two orders of magnitude slower
+        than the compiled languages, because of interpreter dispatch and boxed floating-point objects.
+  \item[H3] The cost per multiply--add is not constant: once the matrix $B$, which is read by columns, no longer
+        fits in a cache level, the cost per operation increases.
+  \item[H4] Memory is dominated by array storage: about $24\,n^2$ bytes for C and Java ($3$ matrices $\times 8$ bytes), a
+        much larger $\approx 120\,n^2$ bytes for Python (each element is an 8-byte pointer plus a separately allocated
+        float object), plus a fixed runtime baseline that is largest for the JVM.
+\end{enumerate}
+
+\paragraph{Scope.} Conclusions are limited to the implementations, compiler and runtime settings, inputs and the
+virtual machine described in Section~\ref{sec:env}. They are \emph{not} a general ranking of programming languages.
+Language-specific optimisations (loop reordering, blocking, libraries) are deliberately excluded; they belong to
+the later assignments.
+
+\section{Background}
+
+\paragraph{Algorithm.} For $C = AB$ with $A,B\in\mathbb{R}^{n\times n}$, $c_{ij}=\sum_{k=1}^{n}a_{ik}b_{kj}$. The
+direct evaluation needs $n^3$ multiplications and $n^3-n^2$ additions, hence $\Theta(n^3)$ work \cite{clrs}. All
+three programs use the loop order $i$--$j$--$k$ and accumulate each $c_{ij}$ in a scalar before storing it.
+
+\paragraph{Memory access pattern.} With row-major storage the inner loop walks $a_{ik}$ along a row (unit stride) but
+$b_{kj}$ down a column (stride $8n$ bytes). Once a column of $B$ touches more cache lines than the cache can
+keep for the next value of $j$, every access to $B$ becomes a cache miss; for stride $8n$ with $n$ a power of two,
+many addresses additionally map to the same cache sets \cite{drepper,hennessy}. This is why the cost per
+multiply--add is expected to rise with $n$ even though the operation count is exactly cubic.
+
+\paragraph{Execution models.} C code is compiled to machine code before running. Java bytecode starts interpreted
+and is compiled by HotSpot's tiered JIT (C1, then C2), including on-stack replacement of hot loops; array accesses
+keep bounds checks unless the JIT can remove them. CPython executes bytecode in an interpreter: every
+\texttt{A[i][k]*B[k][j]} involves several bytecode dispatches, index operations and the allocation of a new
+\texttt{float} object.
+
+\paragraph{Floating-point error.} For a sum of $n$ products, any evaluation order gives
+$|\hat c-c|\le\gamma_n\sum_k|a_{ik}b_{kj}|$ with $\gamma_n=nu/(1-nu)$ and $u=2^{-53}$ \cite{higham}. Because all
+entries here are non-negative, $\sum_k|a_{ik}b_{kj}|=c$, so each implementation has relative error at most
+$\gamma_n$, and two different evaluation orders differ by at most $2\gamma_n$ \cite{goldberg}. This bound is used as the
+acceptance tolerance (Section~\ref{sec:correct}).
+
+\paragraph{Benchmarking practice.} The protocol follows common recommendations: report central value and spread
+over repeated runs, separate warm-up from steady state for JIT-compiled languages, state exactly what is timed
+and report the environment \cite{georges,hoefler}.
+
+\section{Methodology}
+
+\subsection{Implementations}
+\label{sec:impl}
+\begin{itemize}
+  \item \textbf{C} (\texttt{src/c/matmul.c}): one contiguous row-major block of $n^2$ \texttt{double} per matrix; the
+        kernel is a separate non-inlined function so repetitions cannot be merged by the compiler.
+  \item \textbf{Java} (\texttt{src/java/MatMul.java}): \texttt{double[n][n]}, i.e.\ $n$ separately allocated row
+        arrays; kernel in its own static method.
+  \item \textbf{Python} (\texttt{src/python/matmul.py}): list of $n$ lists of $n$ boxed \texttt{float}; pure Python
+        loops, \emph{no} NumPy in the kernel.
+\end{itemize}
+The kernel is identical in structure in all three:
+\texttt{s = 0.0; for k: s += A[i][k]*B[k][j]; C[i][j] = s}, for $i$, $j$ in this order. The scalar accumulator
+differs slightly from a \texttt{C[i][j] += \dots} form: it keeps the same operation order (so the results are
+bit-for-bit identical, see Section~\ref{sec:correct}) and avoids language-specific aliasing effects in the
+comparison. Unavoidable differences are the storage layouts above and the runtime behaviour (JIT, interpreter,
+boxing). No library multiplication is used by any implementation.
+
+\subsection{Inputs}
+Matrices $A$ and $B$ for each $n$ are generated once with NumPy's \texttt{default\_rng} (PCG64) seeded with
+$[20261012, n, w]$ ($w=0$ for $A$, $w=1$ for $B$), uniform in $[0,1)$, and stored as raw little-endian binary64
+files. All three programs read the \emph{same files}, so the logical inputs are identical and no cross-language
+random generator is involved. SHA-256 digests of all files are stored in \texttt{data/manifest.json}.
+
+\subsection{Environment}
+\label{sec:env}
+All measurements were taken on one machine, sequentially, with no other workload running (the driver only polled
+the child process every $0.5$\,s). Table~\ref{tab:env} lists the environment. The machine is a virtual machine
+(KVM) with $2$ vCPUs; the frequency governor is not visible and the processes were not pinned to a CPU. Each
+kernel is single-threaded; the JVM may place its JIT and GC helper threads on the second vCPU. Thread counts used
+by numerical libraries are not relevant because no library is used in the kernels (NumPy is only used for
+generating inputs and checking results, \emph{outside} the measurements) \cite{numpy}.
+
+\begin{table}[H]
+\centering\small
+\input{tables/env.tex}
+\caption{Hardware and software environment.}
+\label{tab:env}
+\end{table}
+
+\subsection{Fixed settings}
+Fixed in every comparison: algorithm and loop order, numeric type (binary64), inputs, single thread, one process
+per configuration, monotonic timers, kernel-only timing. C is compiled with
+\texttt{gcc -O2 -std=c11 -ffp-contract=off} (no \texttt{-march=native}, no \texttt{-ffast-math}): this forbids fused
+multiply--add and re-association, so the arithmetic is the same as in Java and Python. Java runs on OpenJDK~21
+with the default tiered JIT and \texttt{-XX:+UseSerialGC -Xms256m -Xmx4g}. Python is CPython~3.13 with the cyclic
+garbage collector disabled inside the timed region (the kernel allocates only floats, which are not GC-tracked, so
+this only removes a source of pauses). Different compiler options for C are explored in a \emph{separate}
+supplementary experiment (Section~\ref{sec:cflags}).
+
+\subsection{What the timer includes}
+\label{sec:timer}
+\textbf{Kernel only.} The timed region is the triple loop. Reading the inputs, allocating $C$, zero-initialising
+$C$ (so its pages are touched before timing), computing the checksum and dumping the result are \emph{outside} the
+timer. In Python the row lists of $C$ are created outside the timer; the float objects that hold the results are
+created by the kernel and are therefore inside it. Timers: \texttt{clock\_gettime(CLOCK\_MONOTONIC)} (C),
+\texttt{System.nanoTime()} (Java), \texttt{time.perf\_counter\_ns()} (Python). The result of every multiplication is
+consumed: after each timed sample a checksum of $C$ (plain left-to-right sum in row-major order) is computed and
+recorded, and the final $C$ is written to disk and verified.
+
+\subsection{Repetition, warm-up and summary statistics}
+Each configuration $(\text{language},n)$ runs in its own process with a number of \emph{warm-up} samples
+(excluded from the statistics but kept in the raw data) followed by \emph{measured} samples. The numbers depend
+on the estimated time of one multiplication $\hat t$: $\hat t\le 1$\,s: 3 warm-up, 10 measured; $\le30$\,s: 1 warm-up,
+5 measured; $\le120$\,s: no warm-up, 3 measured; larger: no warm-up, 2 measured. Fewer repetitions for costly runs
+are a compromise forced by the budget (a single Python multiplication at the largest sizes takes minutes); the
+resulting spread is reported through min--max and IQR, and the number of repetitions is given for every
+configuration (Table~\ref{tab:time}). When $\hat t<50$\,ms a batch of $m=\lceil 0.1\,\text{s}/\hat t\,\rceil$
+multiplications is timed and divided by $m$, and the reported value is the \emph{time per multiplication}. Reported
+statistics are the \textbf{median} and the \textbf{inter-quartile range} (IQR, $Q_3-Q_1$). The runs for different
+languages are interleaved by size (for each $n$: C, Java, Python) so that slow drift of the machine affects all
+languages alike.
+
+\subsection{Budgets and limits}
+\label{sec:budgets}
+Declared before the large runs: a single timed sample must complete within \textbf{300\,s}; peak resident memory per
+run must not exceed \textbf{4\,GiB}. A run that violates a limit is killed and recorded as a \emph{timeout} or
+\emph{memory failure}, never given an invented time. The driver does not attempt sizes whose predicted time exceeds
+three times the limit and stops enlarging $n$ for an implementation after its first failure. The \emph{largest
+feasible} size (all repetitions completed, results validated) and the \emph{largest attempted} size are reported
+separately (Table~\ref{tab:limits}). Planning aid: three binary64 $n\times n$ matrices need $24n^2$ bytes
+(e.g.\ $\approx 0.4$\,GB at $n=4096$), so memory was not expected to bind before time did.
+
+\subsection{Memory metric}
+The primary metric is the \textbf{peak resident set size} of the whole process (\texttt{VmHWM} from
+\texttt{/proc/self/status}, read by each program just before it exits and before the result is dumped), so it
+includes the runtime itself (JVM, interpreter) and all matrices. The kernel's own accounting
+(\texttt{ru\_maxrss} from \texttt{wait4}) is stored as a cross-check. RSS is not the same quantity as managed-heap use
+or as the arithmetic estimate of array storage, and it is not comparable with them directly; the model
+lines in Figure~\ref{fig:mem} are estimates of array storage added to the measured baseline of the smallest run.
+\textbf{Limitations:} RSS counts pages actually resident (not reserved), includes loader/library pages, and has
+granularity of one page; the Python process also needs transient buffers while loading rows.
+
+\subsection{Correctness}
+\label{sec:correct}
+Before any benchmark, \texttt{scripts/test\_correctness.py} runs all three programs on small cases whose answers are
+known (scalar, hand-computed $3\times3$, non-commutative $2\times2$, zero matrix, identity on both sides,
+all-ones, small-integer matrices; \emph{exact} equality required, all intermediate values are integers below $2^{53}$,
+so there is no overflow or rounding), and on random matrices against NumPy's \texttt{float64} product (tolerance
+$2\gamma_n$ relative, derived in Section~2; absolute tolerance $0$ because every reference entry is positive). It also
+requires the three languages to produce \emph{bit-for-bit identical} results. During the benchmark every run dumps
+its final product and the driver checks it element-wise against NumPy with the same tolerance, plus the checksum
+against the reference sum (tolerance $\gamma_{n^2+2n}$). NumPy/BLAS serves only as a trusted reference and is
+not one of the implementations under study.
+
+\subsection{Supplementary experiments (exploratory, kept separate)}
+\label{sec:supp}
+The following experiments were designed \emph{after} looking at the main results, to test explanations for
+patterns seen there; they are therefore exploratory, they are reported separately, and they do not change the
+controlled comparison above. All use the same driver, inputs, budgets and validation.
+\begin{enumerate}
+  \item \textbf{C optimisation level} (Section~\ref{sec:cflags}): the C program compiled with \texttt{-O0}, \texttt{-O1},
+        \texttt{-O2}, \texttt{-O3} and \texttt{-O3 -march=native} (always with \texttt{-ffp-contract=off}) at
+        $n\in\{512,1000,1024\}$.
+  \item \textbf{Sizes around powers of two} (Section~\ref{sec:pow2}): $n\in\{496,504,512,520\}$ and
+        $\{1016,1024,1032\}$ for C, Java, and the variant below.
+  \item \textbf{Java with a flat array} (\texttt{src/java/MatMulFlat.java}): the same Java algorithm with each matrix
+        stored as one row-major \texttt{double[n*n]} (the layout used by the C program), to test whether the
+        jagged \texttt{double[n][n]} layout explains the Java--C gap. Sizes $n\in\{500,1000,1250,1500,2000\}$ and the
+        power-of-two neighbourhoods. Correctness is checked by the driver on every run (same tolerance), not by
+        the unit-test script.
+  \item \textbf{Between-process variability} (Section~\ref{sec:procvar}): C and Java at $n=1024$ in six
+        independent processes (the main run, the power-of-two run and four dedicated repeats).
+\end{enumerate}

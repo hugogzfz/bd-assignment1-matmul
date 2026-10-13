@@ -1,0 +1,203 @@
+\section{Results}
+
+All values are medians of the measured samples; values in parentheses are IQRs. Times are \emph{per
+multiplication}, kernel only (Section~\ref{sec:timer}). The raw samples (including warm-up) are in
+\texttt{results/raw\_measurements.csv}; per-run information is in \texttt{results/runs.csv}.
+
+\subsection{Correctness}
+All $52$ checks of the pre-benchmark test script passed (Table~\ref{tab:correct}); the maximum observed relative
+error against NumPy was $7.6\times10^{-16}$ ($n=100$), far below the a-priori bound. In the benchmark, all
+\textbf{92 completed runs} (43 of the main campaign and 49 supplementary) passed the element-wise check and the checksum
+check (largest relative error $8.3\times10^{-15}$, i.e.\ below $10\,\%$ of the accepted bound; per-run values in
+\texttt{runs.csv}), and the final $C$ of C, Java and Python was \textbf{bit-for-bit identical} for every size where
+more than one language completed (SHA-256 of the dumped matrix, \texttt{results/summary\_bitwise.csv}). The
+identical bits are expected because all three programs use the same operation order, binary64 arithmetic and no
+fused multiply--add.
+
+\begin{table}[H]
+\centering\footnotesize
+\input{tables/correctness.tex}
+\caption{Pre-benchmark correctness tests (each run in C, Java and Python; bit-for-bit identical across languages in every test).}
+\label{tab:correct}
+\end{table}
+
+\subsection{Runtime versus matrix size}
+Table~\ref{tab:time} and Figure~\ref{fig:time} show the runtime. For small sizes the values come from batches
+(Section~\ref{sec:timer}); at the largest sizes only 2--3 repetitions were affordable. At $n\ge 1500$ Python hit
+the 300\,s limit and from $n=3000$ Java did (Table~\ref{tab:limits}).
+
+\begin{table}[H]
+\centering\footnotesize
+\setlength{\tabcolsep}{4pt}
+\input{tables/time.tex}
+\caption{Median (IQR) time of one multiplication, and number of measured repetitions per implementation. Italics: no
+time exists for that configuration (timeout at the $300$\,s per-sample limit, or not attempted because an earlier size already failed).}
+\label{tab:time}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.86\linewidth]{../figures/fig1_runtime_loglog.pdf}
+\caption{Median time per multiplication against $n$ (log--log). Bands: IQR; faint points: individual repetitions;
+dashed lines: $n^3$ growth anchored at $n=400$. Python was run only up to $n=1250$ and Java up to $n=2048$ within the budget.}
+\label{fig:time}
+\end{figure}
+
+\paragraph{Growth.} A least-squares fit of $\log t$ against $\log n$ gives exponents close to the cubic model only
+for small to medium sizes (Table~\ref{tab:fit}): $3.17$--$3.27$ for $50\le n\le400$ in all three languages. Over the
+larger windows the exponent is $3.29$ for Python, $3.63$ for C and $4.01$ for Java, i.e.\ the cost per multiply--add
+is not constant. Figure~\ref{fig:norm} shows this directly: the time per multiply--add $t/n^3$ is almost flat for
+Python and for C/Java up to $n\approx 1000$, and then grows (C: $1.3\to6.8$\,ns, Java: $2.0\to11.1$\,ns).
+At $n=512$ and $n=1024$ C has isolated spikes (Section~\ref{sec:pow2}).
+
+\begin{table}[H]
+\centering\small
+\input{tables/fit.tex}
+\caption{Empirical exponent $k$ in $t\propto n^{k}$ (least squares on the medians, 95\,\% $t$-interval). The interval reflects the scatter of the medians around the line, not between-process variability (Section~\ref{sec:procvar}).}
+\label{tab:fit}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.82\linewidth]{../figures/fig2_normalised_time.pdf}
+\caption{Median time divided by $n^3$ (nanoseconds per multiply--add). A purely cubic algorithm with constant cost per operation would give horizontal lines.}
+\label{fig:norm}
+\end{figure}
+
+\paragraph{Relative speed.} For $50\le n\le1000$ Python is $54$--$75\times$ slower than C and $49$--$60\times$
+slower than Java; over the whole range where both exist the Python/C ratio is $32\times$ (at $n=1024$, where C
+is slow, see below) to $109\times$ ($n=10$). Java is within $0.77$--$1.51\times$ of C for $50\le n\le1024$ ($1.80\times$ at $n=10$), but
+$2.4\times$ ($n=1250$), $4.3\times$ ($n=1500$), $2.6\times$ ($n=2000$) and $2.2\times$ ($n=2048$) slower at
+larger sizes (\texttt{results/summary\_ratios.csv}).
+
+\subsection{Memory}
+Table~\ref{tab:mem} and Figure~\ref{fig:mem} give the peak resident memory (\texttt{VmHWM}). Memory was never the limiting
+factor: the largest run (C, $n=3000$) peaked at $207.8$\,MiB, versus the $4$\,GiB budget.
+
+\begin{table}[H]
+\centering\small
+\input{tables/memory.tex}
+\caption{Peak resident memory (MiB) of the process (\texttt{VmHWM}); ``--'' where the run did not complete.}
+\label{tab:mem}
+\end{table}
+
+\begin{table}[H]
+\centering\small
+\input{tables/membytes.tex}
+\caption{Baseline (smallest run, $n=10$) and measured growth in bytes per $n^2$ (median over $n\ge500$) against the model of three
+matrices ($24$ B for C/Java, $\approx120$ B for Python).}
+\label{tab:membytes}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.82\linewidth]{../figures/fig3_memory.pdf}
+\caption{Peak resident memory against $n$. Dashed lines: measured baseline of the smallest run plus the array-storage model ($24n^2$ B for C and Java, $120n^2$ B for Python).}
+\label{fig:mem}
+\end{figure}
+
+C grows by $24.0$ bytes per $n^2$ (three $8$-byte matrices) on top of a $1.8$\,MiB baseline. Python grows by $120.9$ bytes
+per $n^2$ ($5\times$ more) on top of $9.8$\,MiB, matching an $8$-byte pointer plus a $32$-byte float object per element
+for three matrices. Java has the largest baseline ($45.7$\,MiB, the JVM itself) and grows by $\approx22$ bytes per $n^2$ up to
+$n=1500$; at $n=2000$ and $2048$ it grows by $32$--$34$ bytes per $n^2$, i.e.\ about $32$\,MiB more than the three
+arrays (not investigated; plausibly heap sizing by the garbage collector). The kernel's \texttt{ru\_maxrss}
+(stored as a cross-check) is useless for small runs ($\approx 33$\,MiB even for C at $n=10$) because it counts the
+parent driver's memory at process creation; this is why \texttt{VmHWM} was chosen as the primary metric.
+
+\subsection{Feasible sizes and limits}
+Table~\ref{tab:limits} separates the largest size that completed within the declared limits from the largest size
+attempted. No run failed for memory. All failures are timeouts of a single multiplication at the $300$\,s limit; their
+times are \emph{not} known, only that they exceeded $300$\,s.
+
+\begin{table}[H]
+\centering\small
+\input{tables/limits.tex}
+\caption{Largest feasible and largest attempted size per implementation. The largest feasible size of every implementation was measured with only 2 repetitions.}
+\label{tab:limits}
+\end{table}
+
+\subsection{Variability and warm-up}
+Within a process, the relative IQR is mostly between $0.5$ and $20\,\%$ (Figure~\ref{fig:var}, left), with one outlier
+of $36\,\%$ (C, $n=1250$); the median over all configurations is $4.8\,\%$. The first warm-up sample of Java is up to $1.3$--$1.6\times$ the steady median for some sizes
+($n=50$, $400$, $500$) and about $1.0$ otherwise (right); with $3$ warm-up samples for the sizes below $1$\,s the
+measured samples are in steady state. For the long runs (no warm-up) the first measured sample was within $10\,\%$ of the median (largest: $+10\,\%$, C at $n=2048$).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.95\linewidth]{../figures/fig4_variability_warmup.pdf}
+\caption{Left: relative IQR of the measured samples within one process. Right: first warm-up sample divided by the median of the measured samples (only sizes with warm-up).}
+\label{fig:var}
+\end{figure}
+
+\subsection{Supplementary experiments}
+
+\paragraph{C optimisation level.}
+\label{sec:cflags}
+Table~\ref{tab:cflags} compares gcc optimisation levels. \texttt{-O0} is $2.2$--$3.7\times$ slower than \texttt{-O2}; \texttt{-O1},
+\texttt{-O2}, \texttt{-O3} and \texttt{-O3 -march=native} are indistinguishable at $n=512$ and $n=1000$ ($\pm 6\,\%$) and differ by at
+most $10\,\%$ at $n=1024$, which is within the between-process variability of Section~\ref{sec:procvar}. All variants produce the
+same bits as \texttt{-O2}. The primary configuration \texttt{-O2} is therefore representative of the optimised builds for this
+kernel; no vectorisation or loop interchange benefit was observed.
+
+\begin{table}[H]
+\centering\small
+\input{tables/cflags.tex}
+\caption{C compiler options: median time per multiplication (10 repetitions at $n=512$, 5 otherwise).}
+\label{tab:cflags}
+\end{table}
+
+\paragraph{Sizes around powers of two.}
+\label{sec:pow2}
+Table~\ref{tab:stride} and Figure~\ref{fig:pow2} show the time per multiply--add just below, at and above $2^9$ and
+$2^{10}$. In C the time at $n=512$ and $n=1024$ is about $1.8$--$1.9\times$ that of the average of the neighbouring sizes
+($n=512$: $2.41$ vs.\ $1.32$--$1.42$\,ns; $n=1024$: $3.04$ vs.\ $1.50$--$1.67$\,ns). The Java program with a flat array shows
+the same spikes ($1.7$--$1.8\times$), whereas the Java program with \texttt{double[n][n]} shows none.
+
+\begin{table}[H]
+\centering\small
+\input{tables/stride.tex}
+\caption{Median time per multiply--add (ns) around powers of two. Single process per cell.}
+\label{tab:stride}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.92\linewidth]{../figures/fig7_powers_of_two.pdf}
+\caption{Median time per multiply--add around $n=2^9$ (left) and $n=2^{10}$ (right).}
+\label{fig:pow2}
+\end{figure}
+
+\paragraph{Java array layout.}
+Table~\ref{tab:layout} and Figure~\ref{fig:layout} compare jagged and flat storage in Java against C. The flat
+version is $1.07$--$1.49\times$ slower than C for $500\le n\le2000$, whereas the jagged version is $1.29$--$4.33\times$
+slower; the jagged/flat ratio grows from $1.1$ at $n=500$--$1000$ to $1.7$--$2.9$ at $n\ge1250$. The $n=1250$ C
+value has an IQR of $36\,\%$ and should be read with care.
+
+\begin{table}[H]
+\centering\small
+\input{tables/layout.tex}
+\caption{Median time per multiplication for C, Java with \texttt{double[n][n]} (jagged), and Java with a flat \texttt{double[]} (supplementary), and ratios.}
+\label{tab:layout}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.82\linewidth]{../figures/fig8_java_layout.pdf}
+\caption{Time per multiply--add for C and the two Java layouts.}
+\label{fig:layout}
+\end{figure}
+
+\paragraph{Between-process variability.}
+\label{sec:procvar}
+Table~\ref{tab:procvar} reports the median time at $n=1024$ in six independent processes. For C the six medians
+span $13\,\%$ of their median ($2.96$--$3.38$\,s), for Java $40\,\%$ ($2.10$--$3.21$\,s). Within each process the relative IQR
+is $2$--$12\,\%$ for C and $3$--$28\,\%$ for Java (the min--max range of Java reaches $47\,\%$ of the median), so at this size the
+timing is noisy both within and between processes. A single-process median at $n=1024$ is therefore uncertain by tens of
+percent for Java, and differences of that size between C and Java at this $n$ cannot be resolved.
+
+\begin{table}[H]
+\centering\small
+\input{tables/procvar.tex}
+\caption{Median time per multiplication at $n=1024$ in six independent processes (process 1 is the main run).}
+\label{tab:procvar}
+\end{table}
