@@ -1,0 +1,42 @@
+{
+  "cpu_model": "Intel(R) Xeon(R) Processor @ 2.80GHz",
+  "logical_processors": 2,
+  "sockets": "1",
+  "cores_per_socket": "2",
+  "threads_per_core": "1",
+  "physical_cores": 2,
+  "hypervisor": "KVM",
+  "virtualization": "full",
+  "cache_L1d": "64 KiB (2 instances)",
+  "cache_L2": "2 MiB (2 instances)",
+  "cache_L3": "33 MiB (1 instance)",
+  "cpu_flags_of_interest": [
+    "avx",
+    "avx2",
+    "avx512f",
+    "fma",
+    "sse4_2"
+  ],
+  "ram_total_MiB": 8030,
+  "swap_total_MiB": 0,
+  "os": "Ubuntu 24.04.5 LTS",
+  "kernel": "6.18.44-fc-v114",
+  "cpu_frequency_governor": "not exposed (virtual machine)",
+  "cpu_affinity_used": "none (processes not pinned)",
+  "python": {
+    "version": "3.13.16",
+    "implementation": "CPython",
+    "build": [
+      "main",
+      "Oct  1 2026 15:40:24"
+    ],
+    "compiler": "GCC 13.3.0",
+    "numpy_version_(reference_and_input_generation_only)": "2.5.3"
+  },
+  "java": "openjdk version \"21.0.12.1\" 2026-08-18\nOpenJDK Runtime Environment (build 21.0.12.1+1-1-24.04.4-Ubuntu)\nOpenJDK 64-Bit Server VM (build 21.0.12.1+1-1-24.04.4-Ubuntu, mixed mode, sharing)",
+  "jvm_flags_used": "-XX:+UseSerialGC -Xms256m -Xmx4g (default tiered JIT: C1+C2)",
+  "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "c_flags_primary": "-O2 -std=c11 -ffp-contract=off  (no -march=native; no -ffast-math)",
+  "threads_used_by_each_implementation": 1,
+  "note_parallelism": "The JVM may use its additional JIT-compiler / GC threads on the second logical CPU; the multiplication itself is single-threaded."
+}

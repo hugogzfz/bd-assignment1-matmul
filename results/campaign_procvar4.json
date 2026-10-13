@@ -1,0 +1,32 @@
+{
+  "campaign": "procvar4",
+  "sizes": [
+    1024
+  ],
+  "configs": [
+    [
+      "c",
+      "c-O2"
+    ],
+    [
+      "java",
+      "java"
+    ]
+  ],
+  "t_mult_s": 300.0,
+  "mem_budget_kib": 4194304,
+  "java_flags": [
+    "-XX:+UseSerialGC",
+    "-Xms256m",
+    "-Xmx4g"
+  ],
+  "c_variants": {
+    "O0": "-O0",
+    "O1": "-O1",
+    "O2": "-O2",
+    "O3": "-O3",
+    "O3-native": "-O3 -march=native"
+  },
+  "rep_policy": "t_est<=1s:10 reps+3 warmup; <=30s:5+1; <=120s:3+0; else 2+0",
+  "batch_policy": "batch=ceil(0.1 s / t_est) when t_est<0.05 s, else 1"
+}

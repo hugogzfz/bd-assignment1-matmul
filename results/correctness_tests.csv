@@ -1,0 +1,53 @@
+test,n,language,mode,max_error,tolerance,result
+scalar 1x1 (3*4),1,c,exact,0.0,0.0,PASS
+scalar 1x1 (3*4),1,java,exact,0.0,0.0,PASS
+scalar 1x1 (3*4),1,python,exact,0.0,0.0,PASS
+hand-computed 3x3,3,c,exact,0.0,0.0,PASS
+hand-computed 3x3,3,java,exact,0.0,0.0,PASS
+hand-computed 3x3,3,python,exact,0.0,0.0,PASS
+2x2 non-commutative,2,c,exact,0.0,0.0,PASS
+2x2 non-commutative,2,java,exact,0.0,0.0,PASS
+2x2 non-commutative,2,python,exact,0.0,0.0,PASS
+zero * random (n=7),7,c,exact,0.0,0.0,PASS
+zero * random (n=7),7,java,exact,0.0,0.0,PASS
+zero * random (n=7),7,python,exact,0.0,0.0,PASS
+identity * B (n=16),16,c,exact,0.0,0.0,PASS
+identity * B (n=16),16,java,exact,0.0,0.0,PASS
+identity * B (n=16),16,python,exact,0.0,0.0,PASS
+A * identity (n=16),16,c,exact,0.0,0.0,PASS
+A * identity (n=16),16,java,exact,0.0,0.0,PASS
+A * identity (n=16),16,python,exact,0.0,0.0,PASS
+all-ones (n=32) -> every entry 32,32,c,exact,0.0,0.0,PASS
+all-ones (n=32) -> every entry 32,32,java,exact,0.0,0.0,PASS
+all-ones (n=32) -> every entry 32,32,python,exact,0.0,0.0,PASS
+"random integers 0..99 (n=64), exact",64,c,exact,0.0,0.0,PASS
+"random integers 0..99 (n=64), exact",64,java,exact,0.0,0.0,PASS
+"random integers 0..99 (n=64), exact",64,python,exact,0.0,0.0,PASS
+"random [0,1) n=5 vs NumPy",5,c,tol,1.8194095437055396e-16,1.1102230246251571e-15,PASS
+"random [0,1) n=5 vs NumPy",5,java,tol,1.8194095437055396e-16,1.1102230246251571e-15,PASS
+"random [0,1) n=5 vs NumPy",5,python,tol,1.8194095437055396e-16,1.1102230246251571e-15,PASS
+"random [0,1) n=17 vs NumPy",17,c,tol,2.2139966239643974e-16,3.774758283725539e-15,PASS
+"random [0,1) n=17 vs NumPy",17,java,tol,2.2139966239643974e-16,3.774758283725539e-15,PASS
+"random [0,1) n=17 vs NumPy",17,python,tol,2.2139966239643974e-16,3.774758283725539e-15,PASS
+"random [0,1) n=33 vs NumPy",33,c,tol,5.569710542707562e-16,7.32747196252606e-15,PASS
+"random [0,1) n=33 vs NumPy",33,java,tol,5.569710542707562e-16,7.32747196252606e-15,PASS
+"random [0,1) n=33 vs NumPy",33,python,tol,5.569710542707562e-16,7.32747196252606e-15,PASS
+"random [0,1) n=64 vs NumPy",64,c,tol,4.307443308139187e-16,1.4210854715202105e-14,PASS
+"random [0,1) n=64 vs NumPy",64,java,tol,4.307443308139187e-16,1.4210854715202105e-14,PASS
+"random [0,1) n=64 vs NumPy",64,python,tol,4.307443308139187e-16,1.4210854715202105e-14,PASS
+"random [0,1) n=100 vs NumPy",100,c,tol,7.599128644160258e-16,2.2204460492503377e-14,PASS
+"random [0,1) n=100 vs NumPy",100,java,tol,7.599128644160258e-16,2.2204460492503377e-14,PASS
+"random [0,1) n=100 vs NumPy",100,python,tol,7.599128644160258e-16,2.2204460492503377e-14,PASS
+scalar 1x1 (3*4) [bitwise identical across C/Java/Python],,all,bitwise,,0,PASS
+hand-computed 3x3 [bitwise identical across C/Java/Python],,all,bitwise,,0,PASS
+2x2 non-commutative [bitwise identical across C/Java/Python],,all,bitwise,,0,PASS
+zero * random (n=7) [bitwise identical across C/Java/Python],,all,bitwise,,0,PASS
+identity * B (n=16) [bitwise identical across C/Java/Python],,all,bitwise,,0,PASS
+A * identity (n=16) [bitwise identical across C/Java/Python],,all,bitwise,,0,PASS
+all-ones (n=32) -> every entry 32 [bitwise identical across C/Java/Python],,all,bitwise,,0,PASS
+"random integers 0..99 (n=64), exact [bitwise identical across C/Java/Python]",,all,bitwise,,0,PASS
+"random [0,1) n=5 vs NumPy [bitwise identical across C/Java/Python]",,all,bitwise,,0,PASS
+"random [0,1) n=17 vs NumPy [bitwise identical across C/Java/Python]",,all,bitwise,,0,PASS
+"random [0,1) n=33 vs NumPy [bitwise identical across C/Java/Python]",,all,bitwise,,0,PASS
+"random [0,1) n=64 vs NumPy [bitwise identical across C/Java/Python]",,all,bitwise,,0,PASS
+"random [0,1) n=100 vs NumPy [bitwise identical across C/Java/Python]",,all,bitwise,,0,PASS

@@ -1,0 +1,27 @@
+[stride] c-O2       n=496   reps=10 warmup=3 batch=1 t_est=0.305 s ... ok, median=0.1729 s, peak RSS=7.4 MiB, check=pass
+[stride] java       n=496   reps=10 warmup=3 batch=1 t_est=0.305 s ... ok, median=0.1991 s, peak RSS=49.7 MiB, check=pass
+[stride] java-flat  n=496   reps=10 warmup=3 batch=1 t_est=0.305 s ... ok, median=0.1722 s, peak RSS=49.4 MiB, check=pass
+[stride] c-O2       n=504   reps=10 warmup=3 batch=1 t_est=0.236 s ... ok, median=0.1681 s, peak RSS=7.6 MiB, check=pass
+[stride] java       n=504   reps=10 warmup=3 batch=1 t_est=0.272 s ... ok, median=0.2115 s, peak RSS=49.5 MiB, check=pass
+[stride] java-flat  n=504   reps=10 warmup=3 batch=1 t_est=0.235 s ... ok, median=0.1724 s, peak RSS=49.3 MiB, check=pass
+[stride] c-O2       n=512   reps=10 warmup=3 batch=1 t_est=0.229 s ... ok, median=0.3234 s, peak RSS=7.8 MiB, check=pass
+[stride] java       n=512   reps=10 warmup=3 batch=1 t_est=0.288 s ... ok, median=0.2116 s, peak RSS=49.8 MiB, check=pass
+[stride] java-flat  n=512   reps=10 warmup=3 batch=1 t_est=0.235 s ... ok, median=0.3121 s, peak RSS=49.8 MiB, check=pass
+[stride] c-O2       n=520   reps=10 warmup=3 batch=1 t_est=0.441 s ... ok, median=0.185 s, peak RSS=8.0 MiB, check=pass
+[stride] java       n=520   reps=10 warmup=3 batch=1 t_est=0.288 s ... ok, median=0.2323 s, peak RSS=49.6 MiB, check=pass
+[stride] java-flat  n=520   reps=10 warmup=3 batch=1 t_est=0.425 s ... ok, median=0.1997 s, peak RSS=49.9 MiB, check=pass
+[stride] c-O2       n=1016  reps=5 warmup=1 batch=1 t_est=1.79 s ... ok, median=1.576 s, peak RSS=25.4 MiB, check=pass
+[stride] java       n=1016  reps=5 warmup=1 batch=1 t_est=2.25 s ... ok, median=2.384 s, peak RSS=67.3 MiB, check=pass
+[stride] java-flat  n=1016  reps=5 warmup=1 batch=1 t_est=1.94 s ... ok, median=1.896 s, peak RSS=66.9 MiB, check=pass
+[stride] c-O2       n=1024  reps=5 warmup=1 batch=1 t_est=2.1 s ... ok, median=3.267 s, peak RSS=25.8 MiB, check=pass
+[stride] java       n=1024  reps=5 warmup=1 batch=1 t_est=3.17 s ... ok, median=2.101 s, peak RSS=67.2 MiB, check=pass
+[stride] java-flat  n=1024  reps=5 warmup=1 batch=1 t_est=2.52 s ... ok, median=3.572 s, peak RSS=67.2 MiB, check=pass
+[stride] c-O2       n=1032  reps=5 warmup=1 batch=1 t_est=4.35 s ... ok, median=1.831 s, peak RSS=26.1 MiB, check=pass
+[stride] java       n=1032  reps=5 warmup=1 batch=1 t_est=2.8 s ... ok, median=2.567 s, peak RSS=67.6 MiB, check=pass
+[stride] java-flat  n=1032  reps=5 warmup=1 batch=1 t_est=4.75 s ... ok, median=2.088 s, peak RSS=67.4 MiB, check=pass
+[layout] java-flat  n=500   reps=10 warmup=3 batch=1 t_est=0.312 s ... ok, median=0.1688 s, peak RSS=49.0 MiB, check=pass
+[layout] java-flat  n=1000  reps=5 warmup=1 batch=1 t_est=1.76 s ... ok, median=1.819 s, peak RSS=66.0 MiB, check=pass
+[layout] java-flat  n=1250  reps=5 warmup=1 batch=1 t_est=4.62 s ... ok, median=5.864 s, peak RSS=79.1 MiB, check=pass
+[layout] java-flat  n=1500  reps=5 warmup=1 batch=1 t_est=13.2 s ... ok, median=9.655 s, peak RSS=94.6 MiB, check=pass
+[layout] java-flat  n=2000  reps=5 warmup=1 batch=1 t_est=29.8 s ... ok, median=35.86 s, peak RSS=170.3 MiB, check=pass
+EXTRA_FINISHED

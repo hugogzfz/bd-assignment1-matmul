@@ -1,0 +1,67 @@
+[main] c-O2       n=10    reps=10 warmup=3 batch=40000 t_est=2.5e-06 s ... ok, median=5.258e-07 s, peak RSS=1.8 MiB, check=pass
+[main] java       n=10    reps=10 warmup=3 batch=40000 t_est=2.5e-06 s ... ok, median=9.489e-07 s, peak RSS=45.7 MiB, check=pass
+[main] python     n=10    reps=10 warmup=3 batch=1667 t_est=6e-05 s ... ok, median=5.75e-05 s, peak RSS=9.8 MiB, check=pass
+[main] c-O2       n=50    reps=10 warmup=3 batch=1171 t_est=8.54e-05 s ... ok, median=9.566e-05 s, peak RSS=1.8 MiB, check=pass
+[main] java       n=50    reps=10 warmup=3 batch=649 t_est=0.000154 s ... ok, median=0.0001185 s, peak RSS=43.2 MiB, check=pass
+[main] python     n=50    reps=10 warmup=3 batch=11 t_est=0.00934 s ... ok, median=0.007126 s, peak RSS=10.0 MiB, check=pass
+[main] c-O2       n=100   reps=10 warmup=3 batch=101 t_est=0.000995 s ... ok, median=0.0008164 s, peak RSS=2.0 MiB, check=pass
+[main] java       n=100   reps=10 warmup=3 batch=82 t_est=0.00123 s ... ok, median=0.0009901 s, peak RSS=43.8 MiB, check=pass
+[main] python     n=100   reps=10 warmup=3 batch=1 t_est=0.0741 s ... ok, median=0.05008 s, peak RSS=10.9 MiB, check=pass
+[main] c-O2       n=200   reps=10 warmup=3 batch=12 t_est=0.00849 s ... ok, median=0.008394 s, peak RSS=2.7 MiB, check=pass
+[main] java       n=200   reps=10 warmup=3 batch=10 t_est=0.0103 s ... ok, median=0.009122 s, peak RSS=44.5 MiB, check=pass
+[main] python     n=200   reps=10 warmup=3 batch=1 t_est=0.521 s ... ok, median=0.4867 s, peak RSS=14.3 MiB, check=pass
+[main] c-O2       n=256   reps=10 warmup=3 batch=5 t_est=0.0229 s ... ok, median=0.0198 s, peak RSS=3.3 MiB, check=pass
+[main] java       n=256   reps=10 warmup=3 batch=5 t_est=0.0249 s ... ok, median=0.01985 s, peak RSS=45.0 MiB, check=pass
+[main] python     n=256   reps=5 warmup=1 batch=1 t_est=1.33 s ... ok, median=1.073 s, peak RSS=17.4 MiB, check=pass
+[main] c-O2       n=400   reps=10 warmup=3 batch=1 t_est=0.0982 s ... ok, median=0.08112 s, peak RSS=5.4 MiB, check=pass
+[main] java       n=400   reps=10 warmup=3 batch=1 t_est=0.0984 s ... ok, median=0.1003 s, peak RSS=47.2 MiB, check=pass
+[main] python     n=400   reps=5 warmup=1 batch=1 t_est=5.32 s ... ok, median=5.247 s, peak RSS=28.3 MiB, check=pass
+[main] c-O2       n=500   reps=10 warmup=3 batch=1 t_est=0.206 s ... ok, median=0.1537 s, peak RSS=7.5 MiB, check=pass
+[main] java       n=500   reps=10 warmup=3 batch=1 t_est=0.255 s ... ok, median=0.1977 s, peak RSS=49.2 MiB, check=pass
+[main] python     n=500   reps=5 warmup=1 batch=1 t_est=13.3 s ... ok, median=11.43 s, peak RSS=38.7 MiB, check=pass
+[main] c-O2       n=512   reps=10 warmup=3 batch=1 t_est=0.214 s ... ok, median=0.2842 s, peak RSS=7.8 MiB, check=pass
+[main] java       n=512   reps=10 warmup=3 batch=1 t_est=0.276 s ... ok, median=0.2186 s, peak RSS=49.7 MiB, check=pass
+[main] python     n=512   reps=5 warmup=1 batch=1 t_est=16 s ... ok, median=12.76 s, peak RSS=40.1 MiB, check=pass
+[main] c-O2       n=800   reps=5 warmup=1 batch=1 t_est=1.41 s ... ok, median=0.6998 s, peak RSS=16.4 MiB, check=pass
+[main] java       n=800   reps=5 warmup=1 batch=1 t_est=1.08 s ... ok, median=0.8306 s, peak RSS=57.6 MiB, check=pass
+[main] python     n=800   reps=3 warmup=0 batch=1 t_est=63.3 s ... ok, median=46.27 s, peak RSS=83.6 MiB, check=pass
+[main] c-O2       n=1000  reps=5 warmup=1 batch=1 t_est=1.78 s ... ok, median=1.335 s, peak RSS=24.7 MiB, check=pass
+[main] java       n=1000  reps=5 warmup=1 batch=1 t_est=2.11 s ... ok, median=2.018 s, peak RSS=66.5 MiB, check=pass
+[main] python     n=1000  reps=3 warmup=0 batch=1 t_est=117 s ... ok, median=98.93 s, peak RSS=125.0 MiB, check=pass
+[main] c-O2       n=1024  reps=5 warmup=1 batch=1 t_est=1.86 s ... ok, median=3.343 s, peak RSS=25.8 MiB, check=pass
+[main] java       n=1024  reps=5 warmup=1 batch=1 t_est=2.82 s ... ok, median=3.21 s, peak RSS=68.0 MiB, check=pass
+[main] python     n=1024  reps=2 warmup=0 batch=1 t_est=138 s ... ok, median=107.3 s, peak RSS=130.6 MiB, check=pass
+[main] c-O2       n=1250  reps=5 warmup=1 batch=1 t_est=7.9 s ... ok, median=4.327 s, peak RSS=37.5 MiB, check=pass
+[main] java       n=1250  reps=5 warmup=1 batch=1 t_est=7.59 s ... ok, median=10.24 s, peak RSS=79.3 MiB, check=pass
+[main] python     n=1250  reps=2 warmup=0 batch=1 t_est=254 s ... ok, median=207.4 s, peak RSS=189.6 MiB, check=pass
+[main] c-O2       n=1500  reps=5 warmup=1 batch=1 t_est=9.72 s ... ok, median=6.463 s, peak RSS=53.3 MiB, check=pass
+[main] java       n=1500  reps=5 warmup=1 batch=1 t_est=23 s ... ok, median=27.96 s, peak RSS=94.9 MiB, check=pass
+[main] python     n=1500  reps=2 warmup=0 batch=1 t_est=466 s ... timeout (no sample completed within 300 s), median=n/a s, peak RSS=n/a MiB, check=not_checked
+[main] c-O2       n=2000  reps=5 warmup=1 batch=1 t_est=19.9 s ... ok, median=33.36 s, peak RSS=93.3 MiB, check=pass
+[main] java       n=2000  reps=3 warmup=0 batch=1 t_est=86.2 s ... ok, median=86.91 s, peak RSS=174.1 MiB, check=pass
+[main] python     n=2000  not attempted (an earlier, smaller size already hit the timeout limit)
+[main] c-O2       n=2048  reps=3 warmup=0 batch=1 t_est=46.6 s ... ok, median=44.15 s, peak RSS=97.8 MiB, check=pass
+[main] java       n=2048  reps=2 warmup=0 batch=1 t_est=121 s ... ok, median=94.96 s, peak RSS=174.3 MiB, check=pass
+[main] python     n=2048  not attempted (an earlier, smaller size already hit the timeout limit)
+[main] c-O2       n=3000  reps=2 warmup=0 batch=1 t_est=180 s ... ok, median=184.6 s, peak RSS=207.8 MiB, check=pass
+[main] java       n=3000  reps=2 warmup=0 batch=1 t_est=388 s ... timeout (no sample completed within 300 s), median=n/a s, peak RSS=n/a MiB, check=not_checked
+[main] python     n=3000  not attempted (an earlier, smaller size already hit the timeout limit)
+[main] c-O2       n=4096  reps=2 warmup=0 batch=1 t_est=611 s ... timeout (no sample completed within 300 s), median=n/a s, peak RSS=n/a MiB, check=not_checked
+[main] java       n=4096  not attempted (an earlier, smaller size already hit the timeout limit)
+[main] python     n=4096  not attempted (an earlier, smaller size already hit the timeout limit)
+[cflags] c-O0       n=512   reps=10 warmup=3 batch=1 t_est=0.336 s ... ok, median=0.6382 s, peak RSS=7.8 MiB, check=pass
+[cflags] c-O1       n=512   reps=10 warmup=3 batch=1 t_est=0.336 s ... ok, median=0.2987 s, peak RSS=7.8 MiB, check=pass
+[cflags] c-O2       n=512   reps=10 warmup=3 batch=1 t_est=0.336 s ... ok, median=0.2917 s, peak RSS=7.8 MiB, check=pass
+[cflags] c-O3       n=512   reps=10 warmup=3 batch=1 t_est=0.336 s ... ok, median=0.2672 s, peak RSS=7.8 MiB, check=pass
+[cflags] c-O3-native n=512   reps=10 warmup=3 batch=1 t_est=0.336 s ... ok, median=0.2779 s, peak RSS=7.8 MiB, check=pass
+[cflags] c-O0       n=1000  reps=5 warmup=1 batch=1 t_est=6.18 s ... ok, median=5.165 s, peak RSS=24.7 MiB, check=pass
+[cflags] c-O1       n=1000  reps=5 warmup=1 batch=1 t_est=2.89 s ... ok, median=1.407 s, peak RSS=24.7 MiB, check=pass
+[cflags] c-O2       n=1000  reps=5 warmup=1 batch=1 t_est=2.83 s ... ok, median=1.413 s, peak RSS=24.7 MiB, check=pass
+[cflags] c-O3       n=1000  reps=5 warmup=1 batch=1 t_est=2.59 s ... ok, median=1.43 s, peak RSS=24.7 MiB, check=pass
+[cflags] c-O3-native n=1000  reps=5 warmup=1 batch=1 t_est=2.69 s ... ok, median=1.392 s, peak RSS=24.7 MiB, check=pass
+[cflags] c-O0       n=1024  reps=5 warmup=1 batch=1 t_est=7.21 s ... ok, median=6.632 s, peak RSS=25.8 MiB, check=pass
+[cflags] c-O1       n=1024  reps=5 warmup=1 batch=1 t_est=1.96 s ... ok, median=2.749 s, peak RSS=25.8 MiB, check=pass
+[cflags] c-O2       n=1024  reps=5 warmup=1 batch=1 t_est=1.97 s ... ok, median=2.701 s, peak RSS=25.8 MiB, check=pass
+[cflags] c-O3       n=1024  reps=5 warmup=1 batch=1 t_est=2 s ... ok, median=2.971 s, peak RSS=25.8 MiB, check=pass
+[cflags] c-O3-native n=1024  reps=5 warmup=1 batch=1 t_est=1.94 s ... ok, median=2.914 s, peak RSS=25.8 MiB, check=pass
+CAMPAIGN_FINISHED
