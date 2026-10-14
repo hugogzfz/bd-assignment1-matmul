@@ -50,9 +50,9 @@ keep bounds checks unless the JIT can remove them. CPython executes bytecode in 
 \texttt{float} object.
 
 \paragraph{Floating-point error.} For a sum of $n$ products, any evaluation order gives
-$|\hat c-c|\le\gamma_n\sum_k|a_{ik}b_{kj}|$ with $\gamma_n=nu/(1-nu)$ and $u=2^{-53}$ \cite{higham}. Because all
+$|\hat c-c|\le\gamma_n\sum_k|a_{ik}b_{kj}|$ with $\gamma_n=nu/(1-nu)$ and $u=2^{-53}$ the unit roundoff of binary64 \cite{higham,goldberg}. Because all
 entries here are non-negative, $\sum_k|a_{ik}b_{kj}|=c$, so each implementation has relative error at most
-$\gamma_n$, and two different evaluation orders differ by at most $2\gamma_n$ \cite{goldberg}. This bound is used as the
+$\gamma_n$, and two different evaluation orders differ by at most $2\gamma_n$ (triangle inequality). This bound is used as the
 acceptance tolerance (Section~\ref{sec:correct}).
 
 \paragraph{Benchmarking practice.} The protocol follows common recommendations: report central value and spread
@@ -117,7 +117,7 @@ $C$ (so its pages are touched before timing), computing the checksum and dumping
 timer. In Python the row lists of $C$ are created outside the timer; the float objects that hold the results are
 created by the kernel and are therefore inside it. Timers: \texttt{clock\_gettime(CLOCK\_MONOTONIC)} (C),
 \texttt{System.nanoTime()} (Java), \texttt{time.perf\_counter\_ns()} (Python). The result of every multiplication is
-consumed: after each timed sample a checksum of $C$ (plain left-to-right sum in row-major order) is computed and
+consumed: after each timed sample a checksum of $C$ (plain left-to-right sum in row-major order; deliberately not Python's built-in \texttt{sum()}, which uses compensated summation since Python~3.12 \cite{py312}) is computed and
 recorded, and the final $C$ is written to disk and verified.
 
 \subsection{Repetition, warm-up and summary statistics}
@@ -126,7 +126,8 @@ Each configuration $(\text{language},n)$ runs in its own process with a number o
 on the estimated time of one multiplication $\hat t$: $\hat t\le 1$\,s: 3 warm-up, 10 measured; $\le30$\,s: 1 warm-up,
 5 measured; $\le120$\,s: no warm-up, 3 measured; larger: no warm-up, 2 measured. Fewer repetitions for costly runs
 are a compromise forced by the budget (a single Python multiplication at the largest sizes takes minutes); the
-resulting spread is reported through min--max and IQR, and the number of repetitions is given for every
+resulting spread is reported through the IQR in Table~\ref{tab:time} (only indicative with $2$--$3$ samples; the min--max range is in
+\path{results/summary_main.csv}), and the number of repetitions is given for every
 configuration (Table~\ref{tab:time}). When $\hat t<50$\,ms a batch of $m=\lceil 0.1\,\text{s}/\hat t\,\rceil$
 multiplications is timed and divided by $m$, and the reported value is the \emph{time per multiplication}. Reported
 statistics are the \textbf{median} and the \textbf{inter-quartile range} (IQR, $Q_3-Q_1$). The runs for different
@@ -135,6 +136,10 @@ languages alike.
 
 \subsection{Budgets and limits}
 \label{sec:budgets}
+\textbf{Declared size sequence} (fixed before the main runs):
+\begin{center}$n\in\{10,\,50,\,100,\,200,\,256,\,400,\,500,\,512,\,800,\,1000,\,1024,\,1250,\,1500,\,2000,\,2048,\,3000,\,4096\}$.\end{center}
+It contains the suggested starting points ($10$, $100$, $1000$), pairs of a power of two and a nearby non-power ($500/512$, $1000/1024$, $2000/2048$) and
+larger sizes until the budget is reached; sizes beyond the first failure of an implementation are not run. Sizes used only in the supplementary experiments are listed in Section~\ref{sec:supp}.
 Declared before the large runs: a single timed sample must complete within \textbf{300\,s}; peak resident memory per
 run must not exceed \textbf{4\,GiB}. A run that violates a limit is killed and recorded as a \emph{timeout} or
 \emph{memory failure}, never given an invented time. The driver does not attempt sizes whose predicted time exceeds

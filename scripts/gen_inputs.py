@@ -10,8 +10,10 @@ Generator : NumPy Generator(PCG64), seeded with the integer list [SEED, n, which
             independent, reproducible stream).
 Values    : uniform in [0, 1), float64.
 
-A manifest (data/manifest.json) stores the SHA-256 of every file so that the
-inputs can be verified after regeneration (the binary files are not committed).
+A manifest (data/manifest.json) stores the SHA-256 of every file. When the manifest already
+contains a file (same seed), the regenerated file is VERIFIED against it: the script prints
+the number of identical files and exits with status 1 if any differ (the binary files are not
+committed; the manifest is).
 
 Usage: gen_inputs.py [--seed 20261012] [--outdir data] n1 n2 n3 ...
 """
@@ -19,6 +21,7 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 
 import numpy as np
 
@@ -51,17 +54,32 @@ def main():
         if old.get("seed") == args.seed:
             manifest["files"] = old.get("files", {})
 
+    mismatches, verified, new = [], 0, 0
     for n in args.sizes:
         for which, name in ((0, "A"), (1, "B")):
             path = os.path.join(args.outdir, "%s_n%d.bin" % (name, n))
             rng = np.random.default_rng([args.seed, n, which])
             rng.random(n * n, dtype=np.float64).tofile(path)
-            manifest["files"][os.path.basename(path)] = {
-                "n": n, "sha256": sha256_file(path), "bytes": os.path.getsize(path)}
+            base = os.path.basename(path)
+            entry = {"n": n, "sha256": sha256_file(path), "bytes": os.path.getsize(path)}
+            old = manifest["files"].get(base)
+            if old is None:
+                manifest["files"][base] = entry      # first generation: record the digest
+                new += 1
+            elif old["sha256"] == entry["sha256"]:
+                verified += 1                        # identical to the reference inputs
+            else:
+                mismatches.append(base)              # keep the reference digest untouched
         print("generated n=%d" % n, flush=True)
 
     with open(mpath, "w") as f:
         json.dump(manifest, f, indent=2, sort_keys=True)
+    print("inputs: %d verified identical to manifest, %d newly recorded, %d DIFFERENT" %
+          (verified, new, len(mismatches)))
+    if mismatches:
+        print("WARNING: these files differ from the reference manifest (other NumPy version?): "
+              + ", ".join(mismatches))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

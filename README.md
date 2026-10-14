@@ -77,7 +77,8 @@ Output lines: `WARMUP/REP <index> <seconds per multiplication> <checksum>`, `RSS
 * Files `data/A_n<N>.bin` / `data/B_n<N>.bin`: raw little-endian IEEE-754 binary64, row-major, `n·n` values.
 * Generator: `numpy.random.default_rng([seed, n, which])`, `seed = 20261012`, `which = 0` (A) or `1` (B);
   values uniform in [0, 1). All three languages read **the same files**, so the logical inputs are identical.
-* `data/manifest.json` stores the SHA-256 of each file – compare after regenerating to confirm identical inputs.
+* `data/manifest.json` stores the SHA-256 of each file. `scripts/gen_inputs.py` **verifies** every regenerated file against it
+  and exits with status 1 if any differs (e.g. a different NumPy version); the reference digests are never overwritten.
 
 ## 5. Fixed settings (identical in every comparison)
 

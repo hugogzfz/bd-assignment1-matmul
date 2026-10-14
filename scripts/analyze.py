@@ -42,7 +42,8 @@ plt.rcParams.update({
 
 
 def tex(s):
-    return str(s).replace("_", r"\_").replace("%", r"\%").replace("&", r"\&").replace("#", r"\#")
+    s = str(s).replace("_", r"\_").replace("%", r"\%").replace("&", r"\&").replace("#", r"\#")
+    return s.replace("->", r"$\rightarrow$").replace(">", r"$>$").replace("<", r"$<$")
 
 
 def fmt_t(s):
